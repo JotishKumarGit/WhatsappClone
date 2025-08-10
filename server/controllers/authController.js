@@ -4,6 +4,7 @@ import otpGenerate from "../utills/otpGenerator.js";
 import userModel from '../models/UserModel.js';
 import response from "../utills/responseHandler.js";
 import sendToEmail from '../services/emailService.js';
+import ConversationModel from "../models/ConversationModel.js";
 
 
 // send otp
@@ -80,7 +81,7 @@ export const verifyOtp = async (req, res) => {
         res.cookie("auth_token", token, {
             httpOnly: true,
             maxAge: 1000 * 60 * 60 * 24 * 365
-        })
+        });
         return response(res, 200, 'Otp verified successfully', { token, user });
     } catch (error) {
         console.log(error);
@@ -112,9 +113,65 @@ export const updateProfile = async (req, res) => {
     }
 }
 
+// check authentication
+export const checkAuthenticated = async (req, res) => {
+    try {
+        const userId = req.user.userId;
+        if (!userId) {
+            return response(res, 404, 'Unauthorized user ! Please login before access the aap');
+        }
+        const user = userModel.findById(userId);
+        if (!user) {
+            return response(res, 404, 'User not found');
+        } else {
+            return response(res, 200, 'User retrieved and allow to use whatsapp');
+        }
+
+    } catch (error) {
+        console.log(error);
+        return response(res, 500, 'Internal server error');
+    }
+}
+
+// logout
+export const logout = async (req, res) => {
+    try {
+        res.cookie('auth_token', "", { expires: new Date(0) });
+        return response(res, 200, 'User logout successfully');
+    } catch (error) {
+        console.log(error);
+        return response(res, 500, 'Internal server error');
+    }
+}
 
 
+// get all users
+export const getAllUsers = async (req, res) => {
+    try {
+        const loggedInUser = req.user.userId;
+        const user = await userModel.find({ _id: { $ne: loggedInUser } }).select("username profilePicture lastSeen isOnline about phoneNumber phoneSuffix");
+        const userWithConversation = await Promise.all(users.map(async (userObj) => {
+            const conversation = await ConversationModel.findOne({
+                participants: { $all: [loggedInUser, userObj?._id] }
+            })
+                .populate({
+                    path: 'lastMessage',
+                    select: 'Content createdAt sender receiver'
+                })
+                .lean();
+            return {
+                ...user,
+                conversation: conversation | null
+            }
+        })
+        )
+    } catch (error) {
+        console.log(error);
+        return response(res, 500, 'Internal server error');
+    }
+}
 
 
+// 2 hours 46 minutes
 
 

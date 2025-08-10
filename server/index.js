@@ -7,7 +7,7 @@ import dotenv from 'dotenv';
 dotenv.config();
 import connectDb from './config/db.js';
 import authRoute from './routes/authRoute.js';
-
+import chatRoute from './routes/chatRoute.js';
 const app = express();
 
 const PORT = process.env.PORT || 5000;
@@ -15,7 +15,7 @@ const PORT = process.env.PORT || 5000;
 // middleware 
 app.use(express.json()); // parse body data
 app.use(cookieParser()); // parse token on every request 
-app.use(bodyParser.urlencoded({ extended: true })); 
+app.use(bodyParser.urlencoded({ extended: true }));
 app.use(morgan('dev')); // whose request is call
 app.use(cors());
 
@@ -27,9 +27,11 @@ app.get('/', (req, res) => {
 
 // routes
 app.use('/api/auth', authRoute);
+app.use('/api/chat', chatRoute);
+
 
 connectDb();
 app.listen(PORT, () => {
-console.log(`Server is listen port ${PORT}`);
+    console.log(`Server is listen port ${PORT}`);
 })
 

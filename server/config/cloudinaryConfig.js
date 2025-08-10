@@ -11,7 +11,7 @@ cloudinary.config({
 })
 
 
-const uploadFileToCloudinary = (file) => {
+ export const uploadFileToCloudinary = (file) => {
     const options = {
         resource_type: file.mimetype.startsWith('video') ? 'video' : 'image',
     };
@@ -28,6 +28,5 @@ const uploadFileToCloudinary = (file) => {
     })
 }
 
-const multerMiddleware = multer({dest:'uploads/'}).single('media');
+export const multerMiddleware = multer({dest:'uploads/'}).single('media');
 
-export default {uploadFileToCloudinary , multerMiddleware};
